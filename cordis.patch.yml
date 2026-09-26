@@ -1,0 +1,10 @@
+# dsh-motion-background bundle patch
+#
+# 与同类插件同构：这一行让加载器解析本包主入口（lib/index.js，宿主半）；
+# 客户端半由 package.json 的 `dsh.client` 声明被 client-modules 扫到。
+#
+# ⚠️ 行里的 id 是 cordis loader 的行 id（宿主侧命名空间），取短名；
+#    与客户端 bundle 的注册键无关 —— 后者必须是**包名**。
+- insert:
+    - id: motion-background
+      name: 'dsh-motion-background'

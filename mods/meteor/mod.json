@@ -1,0 +1,23 @@
+{
+  "id": "meteor",
+  "name": "流星雨",
+  "description": "斜向划过的流星群：每颗都有收束的彗尾与亮头，深色底上漂着一层会闪烁的细星点。全部程序化，无纹理，只用主色派生。",
+  "author": "ZhaoAndy821",
+  "license": "MIT",
+  "order": -10,
+  "colors": "front",
+  "spec": {
+    "u_intensity": 1.0,
+    "u_softness": 0.5,
+    "u_noise": 0.5,
+    "u_shape": 0.5,
+    "u_angle": 0.55,
+    "u_speed": 1.0
+  },
+  "panel": {
+    "intensity": "u_intensity",
+    "softness": "u_softness",
+    "noise": "u_noise",
+    "shape": "u_shape"
+  }
+}

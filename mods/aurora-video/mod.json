@@ -1,0 +1,16 @@
+{
+  "id": "aurora-video",
+  "name": "极光",
+  "description": "媒体型 mod：直接用浏览器原生 <video> 播放一段视频当背景，完全不碰 WebGL —— 没有 WebGL2 的环境里它照样能跑。面板里的「播放」可选「循环」或「往返」（正放到底再倒放回来，避免头尾不衔接的接缝）。",
+  "author": "ZhaoAndy821",
+  "license": "CC0-1.0",
+  "order": 10,
+  "media": {
+    "src": "bg.mp4",
+    "fit": "cover",
+    "opacity": 1,
+    "blend": false,
+    "playMode": "pingpong"
+  },
+  "panel": {}
+}

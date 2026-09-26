@@ -1,0 +1,21 @@
+node_modules/
+*.log
+docs/preview/*.tmp.png
+
+# Temp staging dirs left behind by editors/runners (e.g. ..<name>.<pid>.<uuid>.tmpdir/)
+*.tmpdir/
+
+# ── verify.mjs 的媒体路由夹具（A 组）────────────────────────────────────────
+# 这三个是在**真实的 mods/ 目录**里建的（处理器扫的就是真目录，夹具必须真的落盘，
+# 否则拆掉某道闸后 statSync 兜底 404，反证会静默失效）。
+#
+# ⚠️ 为什么要在 .gitignore 里挡一道：verify.mjs 自己会清（`rmrf(probeDir)` 等三处），
+#    但那段**不在 finally 里** —— 中途抛错、进程被杀、或 rmrf 失败时，它们会留在工作区。
+#    而它们是**可再生的测试产物**，其中一个还叫 `secret.json`（内容是 'DO-NOT-SERVE'）——
+#    这种东西一旦被 `git add -A` 带进公开仓库，既难看又容易被误读成真凭据。
+#
+# 命名约定：夹具一律用 `zz-` 前缀，便于与本仓库的真实 mod 区分。
+# 若将来新增夹具，请照样在这里挡一道。
+mods/zz-media-probe/
+mods/zz-media-neighbor/
+mods/zz-lure.mp4

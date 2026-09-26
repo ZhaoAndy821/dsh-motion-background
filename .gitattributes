@@ -1,0 +1,9 @@
+# 让任何机器上的 checkout 都与 blob **逐字节一致**。
+#
+# 为什么这个仓库需要它：本项目的验证纪律建立在**字节/md5** 上（审核记录、FALSIFICATION、
+# 以及"交付物 = 审核对象"的核对）。而如果 git 的 core.autocrlf=true，
+# checkout 会被 smudge 成 CRLF —— 实测 lib/client.js：blob 29556 B ↔ checkout 30219 B
+# （差 663 = 663 行各多一个 CR），md5 自然对不上，会让人误判"文件被改过"。
+#
+# `* -text` 关掉一切行尾转换：checkout = blob = 仓库里那份（LF）。
+* -text

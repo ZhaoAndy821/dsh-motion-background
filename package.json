@@ -1,0 +1,37 @@
+{
+  "name": "dsh-motion-background",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH WebUI 动态背景 —— 可插拔效果内核。效果以 mod 形式放在 mods/ 目录，放进文件夹即多一个效果。内核为原创代码，不含任何第三方着色器",
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ],
+      "platform": "web"
+    }
+  },
+  "license": "MIT",
+  "files": [
+    "lib",
+    "mods",
+    "docs",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "scripts": {
+    "verify": "node verify.mjs"
+  }
+}
