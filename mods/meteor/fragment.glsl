@@ -194,7 +194,7 @@ void main() {
   vec3 amt = vec3(1.0) - exp(-add * 1.5);
 
   /* ⚠️ 方向按底色亮度选：浅色底上"加亮"会直接饱和到纯白 ——
-     实测（离线审核）：浅色主题下整帧 uniqueColors=1，画面恒等于底色。
+     （离线审核）：浅色主题下整帧 uniqueColors=1，画面恒等于底色。
      浅色底改成**按比例压暗**，深色底维持加亮；两条都让 amt=0 时精确等于底色。 */
   float baseLuma = dot(u_colorBack.rgb, vec3(0.2126, 0.7152, 0.0722));
   vec3 lit = baseLuma > 0.5

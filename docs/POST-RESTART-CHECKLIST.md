@@ -294,5 +294,5 @@ cp package.json.bak-<你备份时的时间戳> package.json
 
 - **GPU 帧率**：所有验证都跑在软件光栅（SwiftShader）上，没有真实 GPU 数据
 - **真 React 渲染**：自检用的是不含渲染的桩 ⇒ 面板的真实交互只有靠人眼看
-- **真实 `slots.inject` 语义**：按官方源码契约与同类型插件实测推定
+- **真实 `slots.inject` 语义**：按官方源码契约与同类型插件推定
 - **`ctx.effect` 的 fiber 回收**：卸载路径未在真机验证
