@@ -10,12 +10,12 @@
  *   C. 客户端半（lib/client.js）—— headless Chromium 真跑：真 fetch、真 WebGL2 编译、
  *      真画一帧、真把 WebGL canvas 画到 2D canvas 数「非背景像素」。
  *   D. 反证：mod 的 GLSL 坏掉时内核不崩、设置卡片照常注册。
- *   E. **行为级断言**（2026-09-25 新增）：真调用卡片组件树数旋钮/看待机灰、真驱动 onChange
+ *   E. **行为级断言**（新增）：真调用卡片组件树数旋钮/看待机灰、真驱动 onChange
  *      再看运行时 spec 与 drawArrays 计数、真读浅色主题下的像素、真数 loseContext。
  *      C/D 里那些"源码字符串存在即通过"的弱断言由这一组补上。
  *
  * 报告器是 **fail-closed** 的：任何阶段抛错都打印「验证未完成」并退出非零，
- * **绝不**打印成功标志（旧版崩溃时仍打印「✅ 四组验证通过」，那是被独立审核点名的缺陷）。
+ * **绝不**打印成功标志（旧版崩溃时仍打印「✅ 四组验证通过」，那是被审核点名的缺陷）。
  *
  * 说明：
  *   · 本脚本**只读**仓库里的 lib/ 与 mods/，任何破坏性写入只发生在 D:/tmp/ 的副本上。
@@ -32,7 +32,7 @@
  *   `--mutate=no-scan-sort`    删掉副本宿主半扫描前的排序             ⇒ B 组"源码级兜底"断言应变红
  *   `--mutate=crash`           在 C 组前故意抛错                      ⇒ 必须非零退出且不打印成功标志
  *
- *   媒体功能的反证（2026-09-25 加）：
+ *   媒体功能的反证（加）：
  *   `--mutate=media-traversal` 拆掉"文件名不许含 .. / 分隔符"那道闸   ⇒ A 组非法路径断言应变红
  *   `--mutate=media-segments`  拆掉"段数必须为 2"那道闸               ⇒ A 组非法路径断言应变红
  *   `--mutate=media-keep-el`   媒体元素不摘除（release 不 remove）     ⇒ E18e"切走不留 <video>"应变红
@@ -90,7 +90,7 @@ const REAL_MP4 = readFileSync(join(HERE, 'mods', 'aurora-video', 'bg.mp4'));
 /**
  * E19b 的 seek **落位率**下限（`landed / assigns`）。
  *
- * ⚠️ 这个数是**实测定出来的**，不是拍脑袋 —— 两个分布（共 7 次独立整套运行）：
+ * ⚠️ 这个数是**实测定出来的**，不是拍脑袋 —— 两个分布：
  *
  *   | 实现 | 落位率（每次独立运行） | 浪费的 seek |
  *   |---|---|---|
@@ -101,7 +101,7 @@ const REAL_MP4 = readFileSync(join(HERE, 'mods', 'aurora-video', 'bg.mp4'));
  * 实测正常 4/4 全绿、洪水 4/4 全红。
  *
  * ⚠️ 曾经取 0.6，**是错的**：洪水版实测 0.643~0.715，与 0.6 只差 0.04~0.12 ⇒
- *    `pingpong-seek-flood` 这条反证一直在 flaky 边界上（2026-09-25 一次 0.625 被抓、
+ *    `pingpong-seek-flood` 这条反证一直在 flaky 边界上（一次 0.625 被抓、
  *    另一次 0.65 放行，整套报「反证失败」，而坏实现其实是坏的 —— 判据没有辨别力，
  *    不是实现变好了）。这是**用实测分布校准阈值**、而不是"取个看起来宽松的数"的理由。
  */
@@ -110,7 +110,7 @@ const SEEK_LAND_RATE_MIN = 0.9;
 /**
  * 删除文件或目录（文件与目录都支持）。
  *
- * ⚠️ 为什么不用裸 `rmSync`（2026-09-25 用垫片源码 + 对照实验查明；旧注释的因果是**错的**）：
+ * ⚠️ 为什么不用裸 `rmSync`（用垫片源码 + 对照实验查明；旧注释的因果是**错的**）：
  *    **调用方（Agent 运行时）**会经 `NODE_OPTIONS` 给每个 node 进程注入一个 safe-delete 垫片，
  *    把 `fs.rmSync` / `fs.rm` / `fs.unlink` / `fs.rmdir` 换成"移入回收站"，并**按对话回合
  *    累计删除项数**（`scope:'turn'`、`totalCount = 已用 + 本次项数`、达阈值即要求确认）。
@@ -333,7 +333,7 @@ async function groupA() {
   /*      ⚠️ 有宿主半变异时**必须 import 副本**，不能 import 源码原文件。
      否则 `--mutate=media-traversal` 这类反证会打在空气上：A 组的非法路径那一组
      仍然跑的是**未被变异**的真实现，于是"全绿"，看起来像"断言很稳"，
-     实际是"断言根本没观察到自己想观察的那份代码"（假绿，2026-09-25 加媒体反证时发现）。
+     实际是"断言根本没观察到自己想观察的那份代码"（假绿，加媒体反证时发现）。
      ⚠️ 但副本的 `mods/` 是 B 组的测试语料（不含 aurora-video）—— 所以下面凡是需要
         **真仓库语料**的断言，都要用 `REAL_MODS` 而非 `payload.dir`，并把"语料在哪"
         这件事显式说明。读的是 lib/，验的是行为，两者不混。 */
@@ -427,7 +427,7 @@ async function groupA() {
          目标文件都**真实存在**（package.json / target.mp4 / secret.json），否则"404 是因为文件不存在"
          会掩盖校验漏洞 —— 那样断言就是假绿。
 
-         🔴🔴 **2026-09-25 实测到的真·假绿，以及它的正确解法**（务必读完再改这个列表）
+         🔴🔴 **实测到的真·假绿，以及它的正确解法**（务必读完再改这个列表）
 
          校验是三道路径闸，**它们互相重叠**：
            ① `parts.length !== 2`  —— 段数必须是 2
@@ -491,7 +491,7 @@ async function groupA() {
                  拆掉 ② 后 `statSync` 会兜底 404，断言照样全绿 ⇒ 反证静默失效。
                  形状对不对**不能靠推理**，要在真目录里算一遍落点。
               ⚠️ 只用 `%5C` 编码形式，**不要写裸反斜杠**：裸的 `..\bg.mp4` 经 shell/heredoc
-                 层转义极易被拼成 `..%08g.mp4`（退格符），同批次实测踩到过。 */
+                 层转义极易被拼成 `..%08g.mp4`（退格符），实测踩到过。 */
         ['★★★ [闸②] 编码反斜杠跨目录读邻居 mod 的 bg.mp4（落点已验存在）',
           '/motion-background/media/' + probeId + '/..%5C' + neighborId + '%5Cbg.mp4'],
         ['★★★ [闸②] 编码反斜杠跨目录读邻居 mod 的 lure.mp4（落点已验存在）',
@@ -516,7 +516,7 @@ async function groupA() {
 
       /* ⚠️ 上面那条的**真·反证前提**（不是自证，是给读者看的硬约束）：
          这组里必须**每道闸都有"只有它拦得住"的向量**，否则拆掉那道闸时它仍会全绿。
-         2026-09-25 血的教训（两次）：
+         血的教训（两次）：
            · 原来 18 条**全都够不着闸②**（各被 ①/③ 兜住）⇒ 拆掉闸② 零红，是假绿；
            · 修闸② 时我给"闸①"打的标签**也是错的** —— 实测那些向量在闸③/id 就死了，
              拆掉段数校验后它们根本没有一条变成 200。
@@ -586,7 +586,7 @@ async function groupA() {
       /* 兜底：等所有已开的流结束再删夹具（读不完的流在目录消失后会抛 unhandled 'error'）。 */
       await new Promise((r) => setTimeout(r, 120));
       /* ⚠️⚠️ 必须走 `rmrf()`（PowerShell 优先），**不能**用裸 `rmSync`。
-         这是 2026-09-25 反证套件"前 7 条绿、第 8 条起 13 条全崩"的根因，实测坐实：
+         这是 反证套件"前 7 条绿、第 8 条起 13 条全崩"的根因，实测坐实：
            · **调用方（Agent 运行时）**经 `NODE_OPTIONS` 给每个 node 进程注入 safe-delete 垫片，
              它把 `fs.rmSync/rm/unlink/rmdir` 换成"移入回收站"，并**按对话回合累计删除项数**
              （`scope:'turn'`，`totalCount = 已用 + 本次项数`，达阈值即要求确认）；
@@ -619,7 +619,7 @@ async function groupA() {
   /* ⚠️ 这两条（"0 个错误""dir 指向真仓库"）只在**非变异**模式成立。
      变异模式下 A 组读的是副本，副本的 mods/ 是 B 组的测试语料（故意塞了 10 类坏 mod），
      拿"真仓库很干净"去要求它**必然误红** —— 那种红是夹具自己造成的，不是被测代码的问题，
-     会污染反证结果（2026-09-25 实测：media-traversal 反证里 4 条红，3 条是这个原因）。
+     会污染反证结果（实测：media-traversal 反证里 4 条红，3 条是这个原因）。
      所以变异模式跳过，并**显式说明**跳过是为了不制造假红。 */
   if (MUTATE === null) {
     check('真实仓库扫出 0 个错误（仓库里的 mod 都干净）',
@@ -821,7 +821,7 @@ async function loadCopyHandler(root) {
  *    这是**耦合缺陷**：宿主半的故障归 A/B 组负责，不该把只测客户端的 C/D/E 一起拖停。
  *    所以这里在"A 组载荷没有 meteor"时，改用**真仓库宿主半**另取一份载荷，
  *    并显式打印原因 —— 回落本身也要留痕，否则就成了"悄悄换掉被测对象"。
- *    （2026-09-25 实测：把 buildCopy 提到 A 组之前后，no-isolation 从"变红"退化成 ERROR。）
+ *    （实测：把 buildCopy 提到 A 组之前后，no-isolation 从"变红"退化成 ERROR。）
  */
 async function payloadForClient(payload) {
   if (Array.isArray(payload?.mods) && payload.mods.some((m) => m.id === 'meteor')) return payload;
@@ -881,7 +881,7 @@ async function groupB() {
   /* 排序规则：`order` 升序 → `id` 字典序兜底。
      ⚠️ 这里必须**按真实规则**验，而不是只验 id 升序：副本里的 meteor 是从真仓库
         cpSync 过来的，它带了 `order:-10`，因此**必然**排在最前 —— 只验 id 升序会红，
-        而红的原因是"断言写的是旧规则"（2026-09-25 实测踩到）。
+        而红的原因是"断言写的是旧规则"（实测踩到）。
      规则：order 优先，同 order 时 id 升序。 */
   const orderOf = (id) => (id === 'meteor' ? -10 : 0);     // 与 mods/meteor/mod.json 一致
   const expectOrder = [...modIds].sort((a, b) => (orderOf(a) - orderOf(b)) || a.localeCompare(b));
@@ -1030,7 +1030,7 @@ function clientSource() {
   /* 源码级变异：每条都必须**真的命中锚点**，否则抛错 —— 一个"没生效的变异"会让反证结果变成假绿/假红。
      ⚠️ **"命中一次"不等于"能力被删掉了"**：同一个能力在源码里可能有多处实现（如 `el.play()`
         在 boot() 与 applyConfig() 各一处）。只改掉第一处 ⇒ 能力仍然可用 ⇒ 反证**假 PASS**
-        （2026-09-25 实测：`media-noplay` 曾以 exit=0 / 187 通过 / 打印成功标志 收场）。
+        （实测：`media-noplay` 曾以 exit=0 / 187 通过 / 打印成功标志 收场）。
         所以 `patch()` 会把"这个锚点在**改动前**的全文里出现几次"记下来并**打印**：
         只要 >1，就说明你只改了一处，必须自己确认那是不是全部（多数情况应改用循环替换）。
         真正需要"删掉整个能力"的地方请参考下面的 media-noplay 写法。 */
@@ -1048,7 +1048,7 @@ function clientSource() {
      ② 媒体不静音：自动播放会被拒 ⇒ E18a（真的在播）应变红，证明那条不是恒真；
      ③ 不驱动 play：证明"在播"这条断言真的在观察 play()。
      ⚠️ ①② 必须留在**这一层**（用 patch 一次替换），不要被下面的 ③ 挤掉 ——
-        2026-09-25 实测踩到：改 ③ 时误删了这两行，于是 `media-keep-el` / `media-loud`
+        实测踩到：改 ③ 时误删了这两行，于是 `media-keep-el` / `media-loud`
         变成"变异根本没施加"（exit=0 / 187 通过 / 打印成功标志），反证被读成"❌ 反证失败"。
         变异没施加与变异太弱，表现是**同一种假 PASS**。 */
   if (MUTATE === 'media-keep-el') patch('          el.remove();\n          ready = false;', '          /* 变异：不摘元素 */\n          ready = false;', 'media-keep-el');
@@ -1058,7 +1058,7 @@ function clientSource() {
      ② 媒体不静音：自动播放会被拒 ⇒ E18a（真的在播）应变红，证明那条不是恒真；
      ③ 不驱动 play：证明"在播"这条断言真的在观察 play()。
 
-     ⚠️⚠️ ③ 必须**同时**干掉两处 `play()`，否则是**弱变异、反证变假 PASS**（2026-09-25 实测踩到）：
+     ⚠️⚠️ ③ 必须**同时**干掉两处 `play()`，否则是**弱变异、反证变假 PASS**（实测踩到）：
         `el.play()` 在 client.js 里有**两处** —— `createMediaSurface().boot()` 与 `applyConfig()`。
         而 `mountSurface()` 挂上之后**紧接着就调 `applyConfig(config)`**（见 client.js 里
         `surface.frame(); applyConfig(config);`）⇒ 只干掉 boot 里那处，视频**照样被第二处播起来**，
@@ -1068,11 +1068,11 @@ function clientSource() {
         做变异前必须先确认这个能力在源码里**一共几处**（这里是 grep `el.play(`）。
         下面用 replaceAll 语义（循环替换 + 计数校验）一次干掉全部。 */
   if (MUTATE === 'media-noplay') {
-    /* ⚠️ 锚点必须**跟上源码**。2026-09-25 加播放模式时，`boot()` 里那处
+    /* ⚠️ 锚点必须**跟上源码**。加播放模式时，`boot()` 里那处
        `try { await el.play(); }` 变成了 `try { await el.play(); running = true; }`
        ⇒ 旧锚点失配、只命中 2 处、总闸抛错拦住（`mutations.mjs` 记成 ERROR）。
        这是**预期行为**（fail-closed 发现了"变异没施加"），代价是必须同步锚点。
-       ⚠️ 2026-09-25 第二次同步：把两处 `void el.play()` 收敛成 `safePlay(...)`
+       ⚠️ 第二次同步：把两处 `void el.play()` 收敛成 `safePlay(...)`
        （为了不让 play() 的异步拒绝漏成 unhandledrejection，见 client.js 里的 safePlay）
        ⇒ 现在要削的是**"真的去播"这条能力**的全部落点，一共 4 处：
          boot 的 `await el.play()`、两处 `safePlay(...)` 调用、以及 `safePlay` 内部那一次 `el.play()`。
@@ -1106,14 +1106,14 @@ function clientSource() {
     }
     from += `（变异：media-noplay，命中 ${hitCount} 处播放落点）`;
   }
-  /* ── 播放模式（往返倒放）专用反证（2026-09-25 加）──
+  /* ── 播放模式（往返倒放）专用反证（加）──
      每条都对着 E19 的**一条具体断言**。这里最容易犯的错是"变异只削状态、不削行为"：
      倒放有两层 —— 状态机（`dir` 翻转）与时间轴驱动（真的改 `currentTime`）。
      只拆驱动、保留状态，E19b 的 `direction === 'reverse'` 照样绿，
      于是"倒放能跑"看着没问题，实际画面根本没动。所以下面每条都指明它该让**哪条**变红。 */
   if (MUTATE === 'pingpong-reduce-ignored') {
     /* 倒放**不看** reduce-motion（把两处 `prefersReduce()` 判据拆掉）。
-       这是独立审核 2026-09-25 指出的 🟢 级缺陷：用户运行中打开系统"减少动态效果"后，
+       这是审核指出的 🟢 级缺陷：用户运行中打开系统"减少动态效果"后，
        正放到头**仍会跑一整轮倒放**（倒放是我们自己的 rAF 驱动的，浏览器不会替我们停）。
        ⇒ 现在这条变异用来钉住修复：E19h 那把 reduce 打开后方向**不该**翻到 reverse。
        锚点刻意只削"倒放这一路"的两处判据，不动 boot/resume 的（那些是另一条契约）。 */
@@ -1127,7 +1127,7 @@ function clientSource() {
   }
   if (MUTATE === 'pingpong-throttle') {
     /* 把闸门换成**纯时间限流**（不看 `seeking`）—— 一种"看着更保守、其实更糟"的写法。
-       它是 2026-09-25 独立审核发现的最大假绿通道：**落位率反而 1.0**（发得少、
+       它是 审核发现的最大假绿通道：**落位率反而 1.0**（发得少、
        5 发 5 中），但可见帧率掉到 2.4 fps、速度掉到 0.60×（比修复前还差）。
        ⇒ 落位率抓不住它；靠 E19b「速度在 0.8~1.2×」与「可见帧率 ≥ 10」才现形。 */
     const anchor = '        if (el.seeking === true && (now - lastIssue) < 250) { rafId = requestAnimationFrame(tickReverse); return; }';
@@ -1192,14 +1192,14 @@ function clientSource() {
      （已在函数开头、任何 patch 之前取好；这里只用不取，避免前后同一份导致差恒为 0。） */
 
   /* 🔒 总闸（**证明能力被拆掉**，不是证明标记存在）。
-     ⚠️ 这条守卫是被两类真实事故逼出来的（2026-09-25）：
+     ⚠️ 这条守卫是被两类真实事故逼出来的（）：
         ① 给 media-noplay 加"命中计数"时，我**误删了** `media-keep-el` 与 `media-loud`
            两行 patch ⇒ 这两条变异变成"根本没施加"。表现与"变异太弱"**完全一样**：
            exit=0、断言全绿、还打印成功标志，被 mutations.mjs 记成「❌ 反证失败」。
         ② 第一版总闸只检查 `from.includes('（变异：')` —— 那是**标记存在性**检查。
            `patch()` 无论替换成什么都会追加这个标记，所以"把能力换成一个等价实现"
            （例如把 `el.muted = true` 改成 `el.muted = !!1`）照样能让它通过。
-           独立审核（security-auditor）指出这正是**假绿**：总闸声称"能力被拆掉"，
+           审核指出这正是**假绿**：总闸声称"能力被拆掉"，
            实际只断言了"我来过"。
      ⇒ 现在改为**按能力核对削减数**：每个变异必须声明它**应当**让哪个源码特征
         出现次数减少多少（`minRemoved`），闸门拿变异前/后的计数差来验。
@@ -1236,7 +1236,7 @@ function clientSource() {
     /* ⚠️⚠️ `mustIntroduce` 必须是一条**只在"被削弱后"的源码里存在**的串。
        本条初版写的是 `mod.media !== null` —— 那是**恒真式**：该串在变异前就已经出现 2 次
        （面板里两处"这是媒体型效果"的说明都用它判分支），于是"变异太弱"这半个防护完全失效
-       （独立审核 2026-09-25 指出，我复现确认）。
+       （审核指出，我复现确认）。
        现在改用带 `? mod : null` 尾巴的整串：实测变异前出现 **0 次**、变异后 1 次 —— 才真的能失败。
        ⇒ 给任何变异写 `mustIntroduce` 前，一律先 `grep` 一遍变异前的源码确认它是 0 次。 */
     'playmode-any-media': { needle: "mod.media?.kind === 'video'", minRemoved: 1, what: '「仅视频型」的控件判据', mustIntroduce: 'mod.media !== null && mod.media !== undefined ? mod : null' },
@@ -1256,7 +1256,7 @@ function clientSource() {
     /* ⚠️ 第二道：削减数只证明"那串文本没了"，**不证明换成了更弱的实现** ——
        把 `el.muted = true` 换成 `el.muted = !!1`（语义等价）同样让计数掉 1。
        所以凡是"削弱点是一段字面量"的变异，都额外要求**那段削弱**真的出现在结果里。
-       （2026-09-25 实测：只有削减计数时，等价替换能骗过总闸、反证 187/0 全绿。） */
+       （实测：只有削减计数时，等价替换能骗过总闸、反证 187/0 全绿。） */
     if (cap.mustIntroduce !== undefined && !src.includes(cap.mustIntroduce)) {
       throw new Error(`--mutate=${MUTATE} 的替换没有引入预期的削弱 "${cap.mustIntroduce}"：`
         + '原锚点确实消失了，但换上去的不是"弱实现"（例如等价写法）—— 能力没被削弱，'
@@ -1326,7 +1326,7 @@ function hostSource() {
      就说明那组断言是假绿（根本没在观察校验逻辑）。
      ⚠️ 锚点用「包含判据检索 + 整行替换」而不是写字面量：这一行里有字符类 `[\\/]`，
         字面量要穿 4 层转义（正则→JS 串→正则字面量→文件），极易写成"看起来一样但 includes 为 false"
-        —— 那样变异会**静默不生效**，反证变成假绿（2026-09-25 实测踩到：锚点不匹配，
+        —— 那样变异会**静默不生效**，反证变成假绿（实测踩到：锚点不匹配，
         拆校验后 18 种非法路径竟然零红）。 */
   if (MUTATE === 'media-traversal') {
     const idx = src.split('\n').findIndex((l) => l.includes("file.includes('..')"));
@@ -1345,7 +1345,7 @@ function hostSource() {
         于是反证的表现是**脚本在 A 阶段崩掉**（`验证未完成`），而不是
         「非法路径断言变红」。那种"崩"虽然也是被注入的变异引起的，但
         它掩盖了我们要观察的东西（闸① 是否真在拦路径），而且会被 mutations.mjs
-        记成 ERROR 而不是 PASS（2026-09-25 实测踩到）。 */
+        记成 ERROR 而不是 PASS（实测踩到）。 */
   if (MUTATE === 'media-segments') {
     const anchor = 'if (parts.length !== 2) return null;';
     if (!src.includes(anchor)) throw new Error('--mutate=media-segments 的锚点没找到');
@@ -1632,7 +1632,7 @@ async function groupC(browser, payload) {
        变异模式下宿主半来自副本，它的 `mods/` 是 B 组的测试语料（10 类故意坏掉的 mod），
        拿"真仓库很干净 / dir 指向真仓库"去要求它**必然误红**，而那个红是**夹具自己造成的**，
        不是被测代码的问题。留着它会让每条媒体反证都带 2 条噪音红，淹没真信号
-       （2026-09-25 实测：media-traversal 反证里 3 条红，其中 2 条就是这个）。 */
+       （实测：media-traversal 反证里 3 条红，其中 2 条就是这个）。 */
     if (MUTATE === null) {
       check('__betterSkin.mods.errors 为空（真跑没有加载期错误）',
         s.mods !== null && Object.keys(s.mods?.errors ?? {}).length === 0, JSON.stringify(s.mods?.errors));
@@ -2138,7 +2138,7 @@ async function groupE(browser, payload) {
     /* ⚠️ 备用 mod **按 id 显式取**，绝不写 `mods[0]`：
        mods 是按文件夹名升序排的，往仓库里加一个新 mod（例如 aurora-video）就会把
        `mods[0]` 挤走 —— 那时载荷里根本没有 meteor，E5 的五六条断言会集体变红，
-       而内核其实是好的（这是**夹具脆弱**，不是产品缺陷，2026-09-25 实测踩到）。
+       而内核其实是好的（这是**夹具脆弱**，不是产品缺陷，实测踩到）。
        显式点名后，新增 mod 永远影响不到这条用例。 */
     const backup = clonePayload(payload).mods.find((m) => m.id === 'meteor');
     if (backup === undefined) {
@@ -2486,7 +2486,7 @@ async function groupE(browser, payload) {
 
       /* ⚠️ 用**同一套** driveCard（真调组件树的 onChange），不要自己 querySelector
          —— 自己写的 DOM 选择器选不到官方的哈希类名/结构，会"切了个寂寞"然后断言全红
-         （2026-09-25 实测：手写的 `[...document.querySelectorAll('select')]` 没匹配到，
+         （实测：手写的 `[...document.querySelectorAll('select')]` 没匹配到，
          切换根本没发生，于是两条断言失败在"没切换"而不是"没释放"）。 */
       const switched = await driveCard(page, { label: '效果', kind: 'select', value: 'zz-shader' });
       check('E18e 前置：面板里能驱动"效果"下拉框切到着色器 mod', switched === true, String(switched));
@@ -2587,7 +2587,7 @@ async function groupE(browser, payload) {
       /* 像素指纹：把当前帧画进 2D canvas 取一个粗指纹。
          ⚠️ 这是"画面真的在变"与"只是标量在变"的**唯一区分手段**。
          ⚠️⚠️ 采样必须**等 `seeked` 事件**再取像素：倒放是靠连续 seek 驱动的，
-             `drawImage` 早于解码落位时会读到**上一帧** —— 2026-09-25 实测踩到：
+             `drawImage` 早于解码落位时会读到**上一帧** —— 实测踩到：
              60ms 定时采样得到 12 个样本、指纹全同（看着像"画面冻住"），
              而同一个实现在驱动器内部逐拍取样是 31/74 不同。
              结论：**不是实现没更新画面，是断言取错了时机** —— 这类"夹具自己坏了"
@@ -2612,7 +2612,7 @@ async function groupE(browser, payload) {
           return opaque === 0 ? 'blank' : String(h);
         };
         /* ⚠️⚠️ **三件套判据**：落位率 + **速度** + **可见帧率**。
-           为什么必须三个都有（2026-09-25 独立审核实测抓到断言网的真空洞）：
+           为什么必须三个都有（审核实测抓到断言网的真空洞）：
              · 只数**落位率** ⇒ 只钉住"别发太多"。一个把 seek 限流到 400ms 的版本
                （它发得少、**反而落位率 1.0**）可见只有 **2.4 fps**、速度 **0.60×**，
                却能全绿通过 —— 落位率根本抓不住它。
@@ -2667,7 +2667,7 @@ async function groupE(browser, payload) {
            seek 的 `seeked` 会落进窗口里，把落位率算成 >1（实测过 23/22=1.045）。
            落位率 >1 在物理上不可能，是个**一眼就该被怀疑**的数字：
            它会让"这条断言在观察什么"变得不可信（分母少算了一次，谁也不知道还少算了什么）。
-           ⚠️⚠️ 独立审核指出这一步**没有修干净**：`waitSeeked` 自带 200ms 超时，
+           ⚠️⚠️ 审核指出这一步**没有修干净**：`waitSeeked` 自带 200ms 超时，
               超时后仍带着"在途未落位的 seek"开窗 ⇒ 那个 seeked 落进窗口 ⇒ 仍可能 >1
               （CPU 降速下 6/6 复现）。所以下面的判据**不依赖 rate ≤ 1** ——
               只要求 ≥0.6，超一点不影响结论；这里如实记录这个已知残余，不再假称"已修掉"。 */
@@ -2740,8 +2740,8 @@ async function groupE(browser, payload) {
          夹具换了素材而没人改这里的话，"倒放距离可观"之类的阈值就失去了依据
          （例如换成一段 1s 的素材，`mediaAdv > 2s` 会永远假红；换成 60s 的则永远假绿）。
          ⚠️ 这条断言**真的能失败**：把夹具换成别的视频（长度≠6s）它就红。
-         （2026-09-25 之前这里是 `REAL_MP4_DURATION` 定义后**从未被引用**的死代码，
-           独立审核指出；现在让它承担"夹具自校验"这个职责。） */
+         （之前这里是 `REAL_MP4_DURATION` 定义后**从未被引用**的死代码，
+           审核指出；现在让它承担"夹具自校验"这个职责。） */
       check(`E19b 夹具自校验：素材时长 = ${REAL_MP4_DURATION}s（下面几条阈值的分母前提）`,
         Math.abs((probe.duration ?? -1) - REAL_MP4_DURATION) < 0.1,
         `实测 duration=${probe.duration}`);
@@ -2749,7 +2749,7 @@ async function groupE(browser, payload) {
         (probe.rate ?? 0) >= SEEK_LAND_RATE_MIN,
         `发出 ${probe.assigns} 次、落位 ${probe.landed} 次 ⇒ 落位率 ${probe.rate ?? 'n/a'}`);
       /* ⚠️⚠️ **速度夹**：倒放必须与正放**同速**（1.0×）。
-         这一条是 2026-09-25 独立审核抓到真空洞后补的：
+         这一条是 审核抓到真空洞后补的：
          上面那条落位率**只钉住"别发太多"**，完全钉不住"别发太少"。
          实测（我复现过审核者的做法）把闸门换成**纯时间限流 400ms**（不看 `seeking`）：
            落位率 **0.8**（照样过 0.6 线）、可见 **2.5 fps**、速度 **0.62×**（比修复前还糟），
@@ -2777,7 +2777,7 @@ async function groupE(browser, payload) {
       check('E19b 倒放段元素是 paused 的（倒放由脚本驱动，不是原生播放 —— 这是它唯一可行路径）',
         (probe.samples ?? []).every((s) => s.paused === true),
         JSON.stringify((probe.samples ?? []).slice(0, 3).map((s) => s.paused)));
-      /* ⚠️⚠️ **必须把页内 `unhandledrejection` 一起读**（独立审核 2026-09-25 指出我漏了这项）：
+      /* ⚠️⚠️ **必须把页内 `unhandledrejection` 一起读**（审核指出我漏了这项）：
          `el.play()` 返回 promise，它的失败**是异步的** —— `try { void el.play() } catch {}`
          根本抓不到，拒绝会冒成 window 上的 `unhandledrejection`。只读 `pageErrors`
          （Playwright 的 pageerror = 未捕获的**同步**异常）会**完全看不见**这条泄漏路径。
@@ -2975,7 +2975,7 @@ async function groupE(browser, payload) {
 
   /* ── E19g：**倒放中途**切到「循环」⇒ 必须继续正放，不许停在半空 ──
    *
-   * 这条是 2026-09-25 用**对照实验**定位到的真实缺陷的回归：
+   * 这条是 用**对照实验**定位到的真实缺陷的回归：
    *   · 正放中途切模式：`readyState=4` ⇒ 正常；
    *   · **倒放中途**切模式：倒放是连续 seek 驱动的 ⇒ `readyState` 掉到 1 ⇒
    *     旧实现里 `resumeInternal()` 的 `readyState < 2` 早退命中 ⇒ `play()` 从未被调用
@@ -3041,7 +3041,7 @@ async function groupE(browser, payload) {
 
   /* ── E19h：运行中打开「减少动态效果」⇒ 倒放**必须立刻不跑** ──
    *
-   * 独立审核 2026-09-25 指出的 🟢 级缺陷：`onEnded` 与倒放驱动都不查 `prefersReduce()`。
+   * 审核指出的 🟢 级缺陷：`onEnded` 与倒放驱动都不查 `prefersReduce()`。
    * 后果不是"画面错"，而是**用户明确要求减少动效之后仍被塞了一整轮倒放动画** ——
    * 而且这段动画是**我们自己**的 rAF 驱动的（正放由浏览器播，浏览器会遵系统设置；
    * 倒放不会），所以"浏览器会管"这个假设在这里不成立，必须我们判。
@@ -3099,10 +3099,10 @@ async function groupE(browser, payload) {
     }
   }
 
-  /* ── 关于「渲染节流」这个性能修复：**本文件里没有对应断言**（2026-09-26 记）──
+  /* ── 关于「渲染节流」这个性能修复：**本文件里没有对应断言**（记）──
      缺陷：`requestAnimationFrame` 会跟着**显示器刷新率**跑 —— 240 Hz 屏上就是 240 次/秒
      的**全屏** WebGL 重绘；而窗口失焦时浏览器**不会**停 rAF ⇒ 切到别的窗口后它继续吃满
-     GPU，鼠标移动/点击（都要经桌面合成）全被拖慢（用户实测报告）。
+     GPU，鼠标移动/点击（都要经桌面合成）全被拖慢（实测报告）。
      修法见 lib/client.js 的 FPS_ACTIVE（30）/ FPS_BLURRED（5）。
 
      ⚠️ 为什么**不写**断言：**这个夹具里动画循环不跑**。加全套诊断后的实测：

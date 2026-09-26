@@ -3,10 +3,10 @@
  * mutations.mjs —— 反证执行器（§7 第 2 条要求的"故意破坏 ⇒ 看它变红 ⇒ 还原"的记录生成器）
  *
  * 为什么需要它：**"现在是绿的"不构成验证**。只有"注入已知坏实现后必须变红"才证明断言真的在观察事实。
- * 独立审核（2026-09-25）指出原交付只有一张"期望变红"的表、没有执行记录；本脚本就是那份记录。
+ * 审核（）指出原交付只有一张"期望变红"的表、没有执行记录；本脚本就是那份记录。
  *
  * 用法：
- *   node mutations.mjs                 # 跑全部反证，打印表格并写出 FALSIFICATION-<date>.md
+ *   node mutations.mjs                 # 跑全部反证，打印表格并写出 FALSIFICATION.md
  *   node mutations.mjs --only=no-draw  # 只跑一条
  *
  * 每条都：① 先跑一次**基线**（必须全绿）② 再跑变异（必须变红）③ 记录退出码与**具体哪条断言变红**。
@@ -78,7 +78,7 @@ const CASES = [
   { flag: 'direct-register', label: 'slot 注册绕开 slots.inject', expect: /设置|注册|slot/i },
   { flag: 'no-scan-sort', label: '删掉宿主半扫描前的排序（F5 的 I8）', expect: /源码级兜底/ },
   { flag: 'crash', label: 'C 组前故意抛错（报告器 fail-closed）', expect: /验证未完成/, noSuccess: true },
-  /* ── 媒体功能的反证（2026-09-25 加）──
+  /* ── 媒体功能的反证（加）──
      每条都对着一条**具体的**媒体断言：如果拆掉实现后那些断言仍然全绿，
      说明它们是假绿（没在观察自己声称观察的东西）。
      ⚠️ `expect` 是正则，必须**真的能匹配**那条断言变红时的文本 ——
@@ -87,7 +87,7 @@ const CASES = [
         ⇒ 这里一律用**不随数量变动的稳定子串**（"非法路径全部 404" / "真的在播"）。
      ⚠️⚠️ **禁止用组名前缀当兜底**（如 `/E18a/`、`/E18e/`）：那是个恒真式的宽匹配 ——
         同一个组里任何一条断言变红都会命中，于是"这条反证在钉哪条契约"就失去了意义。
-        2026-09-25 独立复现（reversal-runner）实测到：`media-loud` 真正的变红断言是
+        实测到：`media-loud` 真正的变红断言是
         「E18a 视频**是静音 + 循环**」，而原来的 `/真的在播|E18a/` **只能靠 `E18a` 这个前缀**命中 ——
         即它看起来在验证"不静音会让播放失败"，实际只是碰巧匹配了组名。
         现在每条都写**唯一能命中的那条断言的措辞**。 */
@@ -96,7 +96,7 @@ const CASES = [
   { flag: 'media-keep-el', label: '媒体元素不摘除（应导致"切走后不留 <video>"变红）', expect: /不留\s*<video>/ },
   { flag: 'media-loud', label: '媒体不静音（应导致"静音 + 循环"变红）', expect: /静音 \+ 循环/ },
   { flag: 'media-noplay', label: '媒体不调用 play()（应导致"真的在播"变红）', expect: /真的在播/ },
-  /* ── 播放模式（往返倒放）的反证（2026-09-25 加）──
+  /* ── 播放模式（往返倒放）的反证（加）──
      每条都指向**唯一**一条断言的措辞（不含组名前缀 —— 那是恒真式宽匹配，见上面的说明）。
      ⚠️ 这里刻意**不写** `/E19b/` 这种前缀兜底：同一个用例里任何一条变红都会命中，
         于是"这条反证在钉哪条契约"就失去了意义。 */
@@ -163,7 +163,7 @@ for (const c of chosen) {
 const ok = rows.every((r) => r.verdict.startsWith('PASS'));
 const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 const doc = [
-  `# 反证执行记录（FALSIFICATION）— ${new Date().toISOString()}`,
+  `# 反证执行记录（FALSIFICATION）`,
   '',
   '> 由 `node mutations.mjs` 生成：每条都是「注入已知坏实现 → 断言必须变红」。',
   '> 基线全绿 + 每条变异都变红，才说明这套断言在观察事实，而不是恒真。',
@@ -181,6 +181,6 @@ const doc = [
   '```',
   '',
 ].join('\n');
-writeFileSync(join(HERE, `FALSIFICATION-${stamp}.md`), doc, 'utf8');
-console.log(`\n记录已写出 → FALSIFICATION-${stamp}.md`);
+writeFileSync(join(HERE, 'FALSIFICATION.md'), doc, 'utf8');
+console.log('\n记录已写出 → FALSIFICATION.md');
 process.exit(ok ? 0 : 1);

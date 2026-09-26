@@ -1,6 +1,6 @@
 # DSH 配置的生命周期：什么时候需要重启、什么时候刷新就够
 
-> 2026-09-25 源码查证 + 运行时实测（含一次**独立审核者做的对照实验**）。
+> 源码查证 + 运行时实测（含一次**审核者做的对照实验**）。
 > **回答一个反复出现的实际问题**：「我改了配置，要重启 DSH 吗？还是刷新页面就行？」
 >
 > ⚠️ **适用范围**：下文的「热生效」结论只对**当前这个 `web` profile** 有实证。
@@ -92,7 +92,7 @@ if (rawPatchReload !== void 0 && rawPatchReload !== "live" && rawPatchReload !==
 const patchReload = rawPatchReload ?? "live";          // ← 本机走的就是这一行
 ```
 
-**本机实测**：`web` 的 `package.json` 里 `dsh.profile` **只有 `bundles` 一个键**，
+**实测**：`web` 的 `package.json` 里 `dsh.profile` **只有 `bundles` 一个键**，
 没有 `patchReload` ⇒ 走 `?? "live"` ⇒ **实际就是 live**。
 
 > 📌 **不要拿 `--dump-config` 去查 `patchReload`** —— 实测它**不输出**该字段
@@ -101,7 +101,7 @@ const patchReload = rawPatchReload ?? "live";          // ← 本机走的就是
 
 > 📌 **所以别把这条结论推广成「dsh 的 patch 都热生效」** —— 只有在
 > `patchReload` 解析为 `"live"` 的 profile 上才成立。`web` 是本机唯一在用的 profile，
-> 但这个边界必须写清楚。（独立审核者 2026-09-25 指出我初版把 `web` 的结论
+> 但这个边界必须写清楚。（审核者 指出我初版把 `web` 的结论
 > 当成了 dsh 的通则，这条修正是对的。）
 
 ### ② 客户端半：改代码后约 500ms 自动热换
@@ -188,7 +188,7 @@ async function reload(id) {
 > **注**：`disabled: true` 的条目是**从模块表里消失**（而不只是 fiber 变化），
 > 它会不会让已打开页面里的那份 JS「卸掉」，我没有对这条路径做实测。
 > 保守说法：**停用后刷新一次页面**最稳。运行时观测到的稳态事实是
-> 「模块表里不再有该条目」（本次实测命中 `0`）。
+> 「模块表里不再有该条目」（命中 `0`）。
 
 ---
 
@@ -233,7 +233,7 @@ async registerConfig(filename, refresh) {
 
 ### 实证 ①：patch 层热生效 —— **直接对照实验（主证据）**
 
-由**独立审核者**在**同一个正在运行的宿主**上做的，**全程未重启**：
+由**审核者**在**同一个正在运行的宿主**上做的，**全程未重启**：
 
 | | 实验前 | 往 profile patch 里加 `disabled` 后 | 删掉该条目后 |
 |---|---|---|---|
@@ -256,7 +256,7 @@ async registerConfig(filename, refresh) {
 
 当时我据此推断"只能是热生效"，并称"已排除替代解释：bundles 至今仍含那个包"。
 
-> ⚠️ **独立审核者指出这条论证有缺陷，我接受**：
+> ⚠️ **审核者指出这条论证有缺陷，我接受**：
 > `reconcilePlugins` 只在 `dsh plugin` 命令跑时执行，而该 profile 在 15:18→15:46
 > 确实发生过 bundles 改写 ——「**现在** bundles 里有它」证明不了「**当时**有它」。
 > 且那个宿主已退出、`dsh plugin` 不留日志，**这条替代解释无法再排除**；
