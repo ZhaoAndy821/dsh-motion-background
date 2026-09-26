@@ -2,9 +2,9 @@
 
 给 DSH WebUI 用的**动态背景**插件：把对话界面的底色换成实时演算的画面，或一段素材。
 
-<video src="https://cdn.jsdelivr.net/gh/ZhaoAndy821/dsh-motion-background@main/docs/preview/meteor.mp4" controls muted loop playsinline width="720"></video>
+![流星雨效果](docs/preview/meteor.gif)
 
-<sub>当你的 DSH 启动失败时背景将播放流星雨</sub>
+<sub>当你的 DSH 启动失败时背景将播放流星雨 · [高清原片（MP4，无音轨）](docs/preview/meteor.mp4)</sub>
 
 两类背景，在设置页里切换：
 
